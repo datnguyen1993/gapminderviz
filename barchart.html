@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html>
+
+<head>
+
+  <!-- Google fonts reference-->
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Catamaran:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <!-- Connecting with D3 library-->
+  <script src="https://d3js.org/d3.v4.min.js" charset="utf-8"></script>
+
+  <!-- Creating the headlines -->
+  <p id="h1">BAR CHART</p>
+  <p id="title">Health spending of EU countries in 2019</p>
+  <div id="link">by DAT NGUYEN</div>
+
+  <style>
+    /*Defining text stylings*/
+
+    #h1 {
+      font-size: 30px;
+      margin: 30px 0px 0px 20px;
+      color: #f5fa91;
+      font-family: 'Catamaran', sans-serif;
+      font-weight: 400;
+    }
+
+    #title {
+      font-size: 20px;
+      margin: 0px 0px 0px 20px;
+      color: #8ef9f0;
+      font-family: 'Catamaran', sans-serif;
+      font-weight: 300;
+    }
+
+    #link {
+      font-family: 'Catamaran', sans-serif;
+      font-weight: 200;
+      font-size: 10px;
+      margin: 5px 0px 0px 22px;
+      color: white;
+    }
+
+    a:link,
+    a:visited,
+    a:active {
+      text-decoration: none;
+      color: white;
+      border-bottom: 1.5px dotted white;
+    }
+
+    body {
+      background-color: #011227;
+    }
+
+    /*Defining chart stylings*/
+
+    .bar {
+      fill: #85f6fa;
+      fill-opacity: 1;
+    }
+
+    /* .bar:hover {
+  fill:WHITE;
+  fill-opacity:1;
+} */
+
+    /*Defining axis stylings*/
+
+    .y-axis text,
+    .x-axis text {
+      font-family: 'Catamaran', sans-serif;
+      font-weight: 400;
+      font-size: 9px;
+      opacity: 1;
+      fill: white;
+    }
+
+    .y-axis path {
+      fill: none;
+      stroke-width: 0;
+      stroke-opacity: 1;
+      stroke: white;
+    }
+
+    .x-axis path {
+      fill: none;
+      stroke-width: 0;
+      stroke-opacity: 1;
+      stroke: white;
+    }
+
+    .y-axis line {
+      fill: none;
+      stroke-width: 0.5;
+      stroke-opacity: 1;
+      stroke: white;
+      stroke-dasharray: 2;
+    }
+
+    .x-axis line {
+      fill: none;
+      stroke-width: 0;
+      stroke-opacity: 1;
+      stroke: white;
+      stroke-dasharray: 2;
+    }
+  </style>
+</head>
+
+<body>
+  <script>
+    //Margin conventions
+    var m = {
+      top: 100,
+      right: 0,
+      bottom: 50,
+      left: 50
+    }
+    w = 950 - m.left - m.right,
+      h = 650 - m.top - m.bottom;
+
+    //Container
+    var svg = d3.select("body")
+      .append("svg")
+      .attr("width", w + m.left + m.right)
+      .attr("height", h + m.top + m.bottom)
+      .append("g")
+      .attr("transform", `translate(${m.left}, ${m.top})`);
+
+    //Data loading
+    d3.csv(
+      "https://gist.githubusercontent.com/datnguyen1993/1e966e8811351e75449b4cbcb58184c3/raw/b1e1ba2c3d013e41f549273c214d7af3c14424ed/oecd_health.csv",
+      prepare,
+      data => {
+
+        //Sort data by value
+        data.sort((b, a) => {
+          return a.Value - b.Value;
+        });
+
+        //X scale
+        var x = d3.scaleBand()
+          .domain(data.map(d => d.LOCATION))
+          .rangeRound([0, w])
+          .paddingInner(0.03);
+
+        //Y scale
+        var y = d3.scaleLinear()
+          .domain([0, d3.max(data, d => d.Value)])
+          .range([h, 0]);
+
+        //X axis
+        svg.append("g")
+          .attr("class", "x-axis")
+          .attr("transform", `translate(0, ${h})`)
+          .call(d3.axisBottom(x));
+
+        //Y axis
+        svg.append("g")
+          .attr("class", "y-axis")
+          .call(d3.axisLeft(y)
+            .tickPadding(0)
+            .tickValues([2000, 4000, 6000])
+            .tickSize(-w)
+            .ticks(4));
+
+        //Drawing the bars
+        svg.selectAll(".bar")
+          .data(data)
+          .enter()
+          .append("rect")
+          .attr("class", "bar")
+          .attr("x", d => x(d.LOCATION))
+          .attr("width", x.bandwidth())
+          .attr("y", d => y(d.Value))
+          .attr("height", d => h - y(d.Value));
+      });
+
+    //Make sure all variables are numbers
+    function prepare(d) {
+      d.Value = +d.Value;
+      return d;
+    }
+  </script>
+</body>
+
+</html>
